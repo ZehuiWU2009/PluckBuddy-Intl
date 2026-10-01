@@ -5,7 +5,7 @@ An intelligent pipa practice companion iOS app built on on-device CoreML. It use
 > Competition entry · Mobile App Innovation Contest (Primary & Secondary School Division) · Launch Track
 >
 > Developer: Zehui Wu (吴泽荟)  
-> School: Wuhan Kangli Senior High School (武汉康礼高级中学)
+> School: Cogdel Cranleigh High School Wuhan (武汉康礼高级中学)
 
 ---
 
