@@ -18,7 +18,7 @@ The project makes technical innovations and engineering trade-offs in five direc
 PluckBuddy looks neither at video alone nor at audio alone. It fuses three signals — **Vision hand landmarks + FFT spectrum + a CoreML classifier** — to decide among four fingering types: Pluck / Tremolo / Sweep / Long Tone.
 
 - **Audio side**: the Accelerate framework performs a 4096-point FFT to estimate pitch and rhythm in real time; at the same time the 48 kHz hardware buffer is linearly interpolated and downsampled to 16 kHz and fed to the CoreML classifier as the gate that decides "is this a pipa"
-- **Video side**: Vision tracks 21 hand landmarks; after Kalman-filter smoothing it computes fingertip angles and wrist height as the geometric features for technique decisions
+- **Video side**: Vision tracks 21 hand landmarks; after Kalman-filter smoothing it computes the tiger mouth angle and wrist height as the geometric features for technique decisions
 - **Fusion strategy**: audio decides "is this a pipa sound" (ruling out speech / ambient noise); video decides "is the hand shape correct"; only when both pass does the pipeline enter technique classification, avoiding single-modality misjudgment
 
 ### Contribution 2 · On-Device Self-Trained CoreML Pipa Sound Classifier
@@ -39,7 +39,7 @@ A self-trained four-class model is built in: `PipaSoundClassifier.mlmodel` (1294
 ### Contribution 3 · Real-Time Algorithms: 4096-Point FFT + Kalman Filtering
 
 - **FFT spectrum analysis**: `DSPFeatureExtractor.swift` uses `vDSP_fft_zrip` (Accelerate-accelerated) to perform a 4096-point FFT and computes RMS, harmonic ratio, spectral centroid, zero-crossing rate and other indicators, which serve as the input features for pitch detection and the classifier
-- **Kalman filter smoothing**: the 21 landmarks obtained by `HandPoseExtractor` jitter on every frame, and using them directly introduces noise; after Kalman-filter smoothing, fingertip angles and wrist height are computed, giving a stable output of fingertip deflection in degrees
+- **Kalman filter smoothing**: the 21 landmarks obtained by `HandPoseExtractor` jitter on every frame, and using them directly introduces noise; after Kalman-filter smoothing, the tiger mouth angle and wrist height are computed, giving a stable output of the tiger mouth opening in degrees
 - **Parallel processing**: the microphone 4096-frame buffer and camera frames are captured on two independent threads without blocking each other; CoreML inference runs on the `inferenceQueue` serial queue and does not contend with the audio main thread
 
 ### Contribution 4 · Unified Audio Pipeline + Model Gating Architecture
@@ -156,7 +156,7 @@ flowchart TB
 - **Platform**: iOS 17.6+, arm64 real device (camera / microphone features require a real device)
 - **CoreML**: `PipaSoundClassifier` (four classes: pipa / other instrument / speech / background noise), `audioSamples` input 15600 frames @ 16 kHz, on-device inference with no network dependency
 - **AVFoundation**: `AVAudioEngine` microphone capture, custom `AudioManager` 4096-frame tap + software 48→16 kHz linear interpolation downsampling
-- **Vision**: left/right hand skeleton extraction (`HandPoseExtractor`), joint angle inference for hand shape
+- **Vision**: left/right hand 21-landmark skeleton extraction (`HandPoseExtractor`), tiger mouth angle and wrist height inference for hand shape
 - **Lottie**: sweep water-ripple and track-character animations
 - **CoreData**: local persistence of practice records / leaderboards / achievements
 
@@ -296,6 +296,52 @@ Files involved:
 - `PluckBuddy/TechniqueCoachViewModel.swift` (the `HandMotionFeatures` struct, the `EvaluationAspect.Category` enum, `calculateFingerAngles` → `calculateTigerMouthAngle`)
 - `PluckBuddy/TechniqueEvaluators.swift` (evaluation function `evaluateFingerAngles` → `evaluateTigerMouthAngle`, hint copy)
 - `PluckBuddy/TechniqueCoachView.swift` (standard scoring items `standardCategories`)
+
+### 3. Sample Rate Unified to 48 kHz
+
+`AudioManager` calls `setPreferredSampleRate(48000.0)`, the input format measured on device really is 48 kHz, and `DSPFeatureExtractor` also reads the actual sample rate from the buffer (48 kHz). The documentation and several detectors, however, still said 44.1 kHz: the two did not match, and `PitchDetector` / `RhythmDetector` / `SweepDetector` / `RollDetector` hard-coded 44100, which pushed pitch about 1.5 semitones low and slowed tempo by about 8.8%.
+
+- Architecture diagram (CN/EN PPTX and the rendered README image): `44.1 kHz` → `48 kHz`
+- `PitchDetector` / `RhythmDetector` / `SweepDetector` / `RollDetector` default sample rate, plus the constructor arguments in four ViewModels: `44100.0` → `48000.0`
+- `DSPFeatureExtractor`'s default value is changed to 48000 as well (it was already overwritten on the first frame by the buffer's real sample rate)
+- The unit test `PitchDetectorTests` stays at 44100: it synthesizes its own 44100 sine wave and feeds it to a detector built with the same value, so it is self-consistent
+
+Files involved:
+- `PluckBuddy/PitchDetector.swift`, `PluckBuddy/RhythmDetector.swift`, `PluckBuddy/SweepDetector.swift`, `PluckBuddy/RollDetector.swift`, `PluckBuddy/DSPFeatureExtractor.swift`
+- `PluckBuddy/TunerViewModel.swift`, `PluckBuddy/FlowerViewModel.swift`, `PluckBuddy/WaveViewModel.swift`, `PluckBuddy/RunningViewModel.swift`
+
+> This change only touches constants, not algorithms: `xcrun swiftc -typecheck` passes on all five detector files (only the pre-existing #NoUsage warnings remain).
+
+### 4. Fingertip Angle → Tiger Mouth Angle (documentation wording)
+
+Contributions 1 and 3 and the tech-stack section still mentioned "fingertip angle", an outdated term. The code actually computes the tiger mouth angle — the opening between thumb and index finger at the wrist — so the wording is corrected to "tiger mouth angle" to avoid a mismatch when reviewers compare the README against the code.
+
+---
+
+## 2026-10-02 Changes
+
+### 1. Thirteen Build Warnings Cleared
+
+A device build reported 14 warnings: 13 of them were real code issues, and 1 was an Xcode toolchain note about AppIntents metadata that has nothing to do with the code. All 13 are fixed, in both the Chinese and the international project.
+
+**a. Inconsistent closure capture semantics (8 places)** — `Task {}` implicitly captures `self` strongly, while the callback closure nested inside it declares `[weak self]`, so the compiler flags the mismatch (`#ImplicitStrongCapture`).
+
+- A startup `Task {}` becomes `Task { [weak self] in` with `guard let self = self else { return }` on its first line: the launch sequence now exits immediately if the screen has already been dismissed, and nothing else in the body changes.
+- A callback `Task { @MainActor in }` becomes `Task { @MainActor [weak self] in`.
+
+**b. Sendable closure reading a main-actor property (3 places)** — the duration timer read `startTime`, a `@MainActor`-isolated property, before opening a Task, which is a cross-isolation access. The read now happens inside `Task { @MainActor [weak self] in }`, on the main thread. Behaviour is unchanged.
+
+**c. Computed but unused values (2 places)** — in `SweepDetector.inferDirection()` the `downCount` / `upCount` over the last five sweeps were computed but never used, since the decision is "alternate against the previous direction". Both lines are removed and the comment corrected; the two same-named variables elsewhere in the file are genuinely used and were kept.
+
+Files involved:
+- `PluckBuddy/FlowerViewModel.swift`, `PluckBuddy/WaveViewModel.swift`, `PluckBuddy/TunerViewModel.swift`, `PluckBuddy/RunningViewModel.swift`, `PluckBuddy/TechniqueCoachViewModel.swift`, `PluckBuddy/SweepDetector.swift`
+
+> Verified with a full `xcrun swiftc -typecheck` run (with `#Preview` blocks stripped): all 13 target warnings are gone, with no new warnings or errors.
+> `CameraManager.swift` reports 21 `AVCaptureSession` cross-thread warnings under strict command-line concurrency checking, but an actual Xcode build never reports them. It follows Apple's own AVCam sample (`startRunning` / `stopRunning` must run on a background queue), and adding `nonisolated` would turn them into errors, so it is left as is.
+
+### 2. App Icon Switched to the English Artwork
+
+The international build was still shipping the Chinese app icon. It now uses the English artwork (`logo-English.png`) for the default, dark and tinted appearances alike.
 
 ---
 

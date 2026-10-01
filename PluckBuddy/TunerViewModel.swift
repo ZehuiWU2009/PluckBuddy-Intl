@@ -74,7 +74,8 @@ class TunerViewModel: ObservableObject {
     
     // MARK: - Lifecycle
     func startListening() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             // Request microphone permission
             audioManager = AudioManager.shared
             guard let manager = audioManager else { return }
@@ -86,7 +87,7 @@ class TunerViewModel: ObservableObject {
             }
             
             // Initialize the pitch detector
-            pitchDetector = PitchDetector(sampleRate: 44100.0, bufferSize: 4096)
+            pitchDetector = PitchDetector(sampleRate: 48000.0, bufferSize: 4096)
             
             // ✅ Initialize the dedicated pipa sound detector
             dspExtractor = DSPFeatureExtractor(fftSize: 4096)

@@ -66,7 +66,8 @@ class FlowerViewModel: ObservableObject {
     
     // MARK: - Lifecycle
     func startPractice() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             print("🌸 Starting tremolo practice...")
             
             // Request microphone permission
@@ -86,16 +87,16 @@ class FlowerViewModel: ObservableObject {
             print("✅ Microphone permission granted")
             
             // Initialize the tremolo detector
-            rollDetector = RollDetector(sampleRate: 44100.0)
+            rollDetector = RollDetector(sampleRate: 48000.0)
             
             rollDetector?.onRollDetected = { [weak self] event in
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     self?.handleRollEvent(event)
                 }
             }
             
             rollDetector?.onRollSequenceComplete = { [weak self] sequence in
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     self?.handleSequenceComplete(sequence)
                 }
             }
@@ -436,8 +437,8 @@ class FlowerViewModel: ObservableObject {
     // MARK: - Timer Management
     private func startDurationTimer() {
         durationTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            guard let self = self, let start = self.startTime else { return }
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self = self, let start = self.startTime else { return }
                 self.sessionDuration = Date().timeIntervalSince(start)
                 
                 // Check whether the target duration has been reached

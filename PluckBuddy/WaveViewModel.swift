@@ -60,7 +60,8 @@ class WaveViewModel: ObservableObject {
     
     // MARK: - Lifecycle
     func startPractice() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             // Request microphone permission
             audioManager = AudioManager.shared
             guard let manager = audioManager else { return }
@@ -72,10 +73,10 @@ class WaveViewModel: ObservableObject {
             }
             
             // Initialize the sweep detector
-            sweepDetector = SweepDetector(sampleRate: 44100.0)
+            sweepDetector = SweepDetector(sampleRate: 48000.0)
             
             sweepDetector?.onSweepDetected = { [weak self] event in
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     self?.handleSweepEvent(event)
                 }
             }
