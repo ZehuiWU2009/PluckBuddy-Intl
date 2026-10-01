@@ -63,7 +63,7 @@ struct WelcomeView: View {
                 // Developer info
                 VStack(spacing: 3) {
                     Text("Developer: Zehui Wu")
-                    Text("School: Wuhan Kangli Senior High School")
+                    Text("School: Cogdel Cranleigh High School Wuhan")
                 }
                 .font(.system(size: 12))
                 .foregroundStyle(Self.brandPurple.opacity(0.55))
