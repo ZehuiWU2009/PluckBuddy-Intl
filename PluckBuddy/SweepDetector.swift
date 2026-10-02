@@ -110,8 +110,7 @@ class SweepDetector {
             return .down // Default to downward
         }
         
-        // Count the distribution of recent directions
-        // 取最近若干次记录用于方向判定
+        // Take the most recent records for direction inference
         let recentDirections = sweepHistory.suffix(5)
         
         // Tend to alternate direction
