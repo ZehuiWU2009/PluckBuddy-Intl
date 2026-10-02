@@ -78,8 +78,6 @@ See the next section, System Architecture, for the detailed diagram. Core innova
 
 It adopts a fully offline on-device five-layer architecture: everything from raw microphone / camera data to UI feedback is completed on the iPhone, with no network dependency whatsoever.
 
-![PluckBuddy Five-Layer Architecture](docs/images/architecture.png)
-
 How each layer maps to the code is shown below.
 
 ```mermaid
