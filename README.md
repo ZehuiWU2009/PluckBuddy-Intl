@@ -213,6 +213,30 @@ The provisioning profile of a free Apple ID expires after 7 days; when it expire
 
 ---
 
+## Version History
+
+After the first English build the app went through two more rounds of refinement, each driven by on-device testing. Step-by-step changes are recorded in the repository commit history.
+
+### v1.0 · First English edition (2026-10-01)
+
+- Full translation of the Chinese edition: 52 Swift files, about 13,700 lines, 664 UI strings and 1,576 lines of comments
+- Bundle id changed to `com.zehuiwu.pluckbuddy.intl` so that the Chinese and English editions can be installed on the same iPhone at the same time
+- Carries over the technical work already done on the Chinese edition: the 48 kHz audio pipeline, the 21-point hand skeleton, the tiger-mouth angle metric and the on-device CoreML sound gate
+
+### v1.1 · School name, app icon and build warnings (2026-10-01 – 10-02)
+
+- School name corrected to Cogdel Cranleigh High School Wuhan in both the README and the welcome screen
+- App icon replaced with the English artwork across the default, dark and tinted appearances
+- 13 real-device build warnings cleared: explicit weak capture in 8 closures with an early exit once the view is gone, 3 timer callbacks moved to read isolated properties on the main actor, and 2 direction counters removed that were computed but never used
+- One Chinese comment left behind in `SweepDetector.swift` replaced with English
+
+### v1.2 · Release cleanup (2026-10-02)
+
+- Dated change-log sections removed from the README and phrasing reworded into plain technical prose
+- Architecture diagram and logo images removed together with their editable sources, the docs folder dropped, and the README no longer references any image
+
+---
+
 ## Known Limitations / To Be Improved
 
 - Classifier precision is still limited by the training data distribution. If the real-device console shows `rms > 0.05` but `pipa < 0.3`, the model's discriminative power is insufficient for the current microphone sound quality, and it needs to be retrained with the Create ML Sound Analysis template (≥ 30 clips of 16 kHz audio per class; a clearly better model can usually be produced within 30 minutes)
