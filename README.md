@@ -5,7 +5,7 @@ An intelligent pipa practice companion iOS app built on on-device CoreML. It use
 > Competition entry · Mobile App Innovation Contest (Primary & Secondary School Division) · Launch Track
 >
 > Developer: Zehui Wu (吴泽荟)  
-> School: Cogdel Cranleigh High School Wuhan (武汉康礼高级中学)
+> School: Wuhan Cogdel Cranleigh High School (武汉康礼高级中学)
 
 ---
 
@@ -225,7 +225,7 @@ After the first English build the app went through two more rounds of refinement
 
 ### v1.1 · School name, app icon and build warnings (2026-10-01 – 10-02)
 
-- School name corrected to Cogdel Cranleigh High School Wuhan in both the README and the welcome screen
+- School name corrected to Wuhan Cogdel Cranleigh High School in both the README and the welcome screen
 - App icon replaced with the English artwork across the default, dark and tinted appearances
 - 13 real-device build warnings cleared: explicit weak capture in 8 closures with an early exit once the view is gone, 3 timer callbacks moved to read isolated properties on the main actor, and 2 direction counters removed that were computed but never used
 - One Chinese comment left behind in `SweepDetector.swift` replaced with English
