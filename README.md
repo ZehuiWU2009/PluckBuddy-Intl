@@ -1,8 +1,8 @@
 # PluckBuddy — AI Pipa Practice Companion
 
-An intelligent pipa practice companion iOS app built on on-device CoreML. It uses the camera to recognize hand shape and the microphone to recognize sound, delivering real-time fingering scores, tuning assistance and metronome accompaniment, so that learners can develop a standard tone and rhythm at home.
+An intelligent Pipa practice companion iOS app built on on-device CoreML. It uses the camera to recognize hand shape and the microphone to recognize sound, delivering real-time fingering scores, tuning assistance and metronome accompaniment, so that learners can develop a standard tone and rhythm at home.
 
-> Competition entry · Mobile App Innovation Contest (Primary & Secondary School Division) · Launch Track
+> Personal project · grown out of my own Pipa practice, still evolving
 >
 > Developer: Zehui Wu (吴泽荟)  
 > School: Wuhan Cogdel Cranleigh High School (武汉康礼高级中学)
@@ -17,9 +17,9 @@ The project makes technical innovations and engineering trade-offs in the follow
 
 PluckBuddy fuses three signals — Vision hand landmarks, an FFT spectrum and a CoreML classifier — to decide among four fingering types: Pluck, Tremolo, Sweep and Long Tone.
 
-- **Audio side**: the Accelerate framework performs a 4096-point FFT to estimate pitch and rhythm in real time; at the same time the 48 kHz hardware buffer is linearly interpolated and downsampled to 16 kHz and fed to the CoreML classifier as the gate that decides "is this a pipa"
+- **Audio side**: the Accelerate framework performs a 4096-point FFT to estimate pitch and rhythm in real time; at the same time the 48 kHz hardware buffer is linearly interpolated and downsampled to 16 kHz and fed to the CoreML classifier as the gate that decides "is this a Pipa"
 - **Video side**: Vision tracks 21 hand landmarks; after Kalman-filter smoothing it computes the tiger mouth angle and wrist height as the geometric features for technique decisions
-- **Fusion strategy**: audio decides "is this a pipa sound" (ruling out speech / ambient noise); video decides "is the hand shape correct"; only when both pass does the pipeline enter technique classification, avoiding single-modality misjudgment
+- **Fusion strategy**: audio decides "is this a Pipa sound" (ruling out speech / ambient noise); video decides "is the hand shape correct"; only when both pass does the pipeline enter technique classification, avoiding single-modality misjudgment
 
 ### Contribution 2 · On-Device Self-Trained CoreML Pipa Sound Classifier
 
@@ -91,7 +91,7 @@ flowchart TB
         B2["48 kHz → 16 kHz linear interpolation downsampling<br/>Mono mixing"]
     end
     subgraph L3 ["Layer 3 · Model Inference (CoreML)"]
-        C1["PipaSoundClassifier<br/>Four classes: pipa / other instrument / speech / background<br/>Input: 15600 frames @ 16 kHz sliding window"]
+        C1["PipaSoundClassifier<br/>Four classes: Pipa / other instrument / speech / background<br/>Input: 15600 frames @ 16 kHz sliding window"]
     end
     subgraph L4 ["Layer 4 · Metric Evaluation"]
         D1["Pitch detection (PitchDetector)"]
@@ -137,8 +137,8 @@ flowchart TB
 
 | Module                    | Description                                                                                                                                                              |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Smart Fingering Coach** | Recognizes left/right hand shapes in real time with the camera (Vision framework), matches the 5 core pipa techniques (Pluck / Tremolo / Sweep / Long Tone / Noise), and produces frame-stable technique scores plus a rotating carousel of core requirements |
-| **Smart Tuner**           | The microphone captures the open-string sound of the pipa; a self-developed FFT algorithm reports the current pitch and its cents deviation from the twelve-tone equal temperament standard. A CoreML classifier is wired in as gating: "decide pipa sound first → then decide pitch" |
+| **Smart Fingering Coach** | Recognizes left/right hand shapes in real time with the camera (Vision framework), matches the 5 core Pipa techniques (Pluck / Tremolo / Sweep / Long Tone / Noise), and produces frame-stable technique scores plus a rotating carousel of core requirements |
+| **Smart Tuner**           | The microphone captures the open-string sound of the Pipa; a self-developed FFT algorithm reports the current pitch and its cents deviation from the twelve-tone equal temperament standard. A CoreML classifier is wired in as gating: "decide pipa sound first → then decide pitch" |
 | **Pluck Run**             | Gamified beat-track accompaniment. Each completed Pluck moves the character one cell forward on the track; it also tracks beat stability, BPM and the total score              |
 | **Tremolo Bloom**         | Tremolo training visualized as a growing flower. It detects the evenness of consecutive fast plucks, and petals bloom after one round is completed                            |
 | **Sweep Wave**            | Sweep training visualized as water ripples. It distinguishes up-sweep / down-sweep and generates a ripple animation in the corresponding direction                            |
@@ -153,7 +153,7 @@ flowchart TB
 - The app is written in Swift 6, with SwiftUI for the interface, Combine for state binding, and Swift Concurrency in strict mode
 - It runs on arm64 devices with iOS 17.6 or later, and the camera and microphone features must be demonstrated on a real device
 - On the algorithm side, vDSP from the Accelerate framework does the FFT, AVAudioEngine handles microphone capture, and Vision extracts hand landmarks
-- The acoustic model is the self-trained CoreML classifier PipaSoundClassifier, which separates pipa, other instruments, speech and background noise, entirely offline
+- The acoustic model is the self-trained CoreML classifier PipaSoundClassifier, which separates Pipa, other instruments, speech and background noise, entirely offline
 - Audio capture goes through the custom AudioManager, which installs one tap of 4096 frames per buffer and then linearly interpolates the hardware 48 kHz down to 16 kHz
 - Hand shape comes from HandPoseExtractor, which returns 21 landmarks per hand, from which the tiger mouth angle and wrist height are computed
 - Lottie drives the sweep water-ripple and track-character animations, and CoreData keeps practice records, leaderboards and achievements on the device
@@ -183,7 +183,7 @@ PluckBuddy/
 │   ├── Persistence.swift         # CoreData persistence
 │   ├── AudioManager.swift        # Unified audio capture
 │   ├── PipaSoundClassifier.mlmodel  # On-device four-class CoreML model
-│   ├── PipaSoundGate.swift       # Tuner-only pipa sound gate (loads the model independently to avoid fighting with the Fingering Coach over the AVAudioEngine tap)
+│   ├── PipaSoundGate.swift       # Tuner-only Pipa sound gate (loads the model independently to avoid fighting with the Fingering Coach over the AVAudioEngine tap)
 │   ├── CameraManager.swift       # Camera capture (new rotation API)
 │   ├── HandPoseExtractor.swift   # Vision hand shape extraction
 │   ├── DSPFeatureExtractor.swift # Self-developed FFT spectral features
@@ -248,4 +248,4 @@ After the first English build the app went through two more rounds of refinement
 
 ## License
 
-Source code of a competition entry; for review and learning purposes only.
+Source code of a personal project; discussion and learning welcome.
