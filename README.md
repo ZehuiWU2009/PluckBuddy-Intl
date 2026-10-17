@@ -6,6 +6,10 @@ An intelligent Pipa practice companion iOS app built on on-device CoreML. It use
 >
 > Developer: Zehui Wu (吴泽荟)  
 > School: Wuhan Cogdel Cranleigh High School (武汉康礼高级中学)
+>
+> ---
+>
+> **Superseded by the bilingual edition: [PluckBuddy-Bilingual](https://github.com/ZehuiWU2009/PluckBuddy-Bilingual)** — development continues there with both Chinese and English in one app.
 
 ---
 
